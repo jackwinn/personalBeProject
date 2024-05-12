@@ -76,13 +76,13 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 app.disable("x-powered-by");
 
-const echo = `iRoomz backend-services`;
+const echo = `backend-services`;
 
 app.get("/", (req: Request, res: Response) => {
   res.end(echo);
 });
 
-require("./app/services/userService")(app);
+require("./services/userService")(app);
 
 const server = app.listen(port, () => {
   let host = server.address().address;
