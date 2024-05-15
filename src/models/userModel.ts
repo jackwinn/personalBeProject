@@ -42,7 +42,6 @@ const UserSchema = new Schema({
         module: [],       
     },
     lastLogin: Date,
-    createdBy: Schema.ObjectId,
 }, {
     versionKey: false,
     timestamps: {

@@ -1,38 +1,58 @@
-//packages
+//package
 import { Express } from "express";
 
-//dbs
+//lib
 const dbs = require("../libs/db");
 
-//components
+//component
 const userComponent = require("../components/userComponents");
 
-
 module.exports = (app: Express) => {
-  app.post("/users/:action", async (req, res) => {
+  app.post("/user/:action", async (req, res) => {
     const action = req.params.action;
-    const reqBody = req.body;
+    const reqbody = req.body;
     // console.log(`action: ${action}`)
-    // console.log(reqBody);
+    // console.log(reqbody);
 
-    const requestBodyValidation = (action: string, reqBody: any) => {
-      if (action === "getById") {
-        if (!reqBody._id || !dbs.isMongoDbObjectId(reqBody._id)) {
+    const requestBodyValidation = (action: string, reqbody: any) => {
+      if (action === "create" || action === "login") {
+        if (!reqbody.email || !reqbody.password || !reqbody.role) {
           return {
             ok: false,
           };
         }
       }
-
+      if (action === "getById") {
+        if (!reqbody.userId || !dbs.isMongoDbObjectId(reqbody.userId)) {
+          return {
+            ok: false,
+          };
+        }
+      }
       return {
         ok: true,
       };
     };
 
     const actionHandlers = {
+      create: async () => {
+        const result = await userComponent.create(
+          reqbody.email,
+          reqbody.password,
+          reqbody.role
+        );
+        return result;
+      },
+      login: async () => {
+        const result = await userComponent.login(
+          reqbody.email,
+          reqbody.password
+        );
+        return result;
+      },
       getById: async () => {
-        const result = await userComponent.getById(reqBody._id);
-        return result
+        const result = await userComponent.getById(reqbody.userId);
+        return result;
       },
     };
 
@@ -40,20 +60,19 @@ module.exports = (app: Express) => {
       return res.json(result);
     };
 
-    const handleError = (err: any) => {
-      throw err;
-    };
-
     // Check if the requested action exists
     if (actionHandlers[action]) {
-      const validation = requestBodyValidation(action, reqBody);
+      const validation = requestBodyValidation(action, reqbody);
       if (validation.ok) {
         try {
           const result = await actionHandlers[action]();
           handleSuccess(result);
         } catch (err) {
-          handleError(err);
+          res.status(500).end();
+          throw err;
         }
+      } else {
+        return res.status(422).end();
       }
     } else {
       return res.status(412).end(); // Precondition Failed for unsupported action

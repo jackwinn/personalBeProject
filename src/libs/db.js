@@ -33,10 +33,10 @@ exports.newId = () => {
 };
 
 exports.ensureMongoId = (id) => {
-    return new mongoose.Types.ObjectId(id); // need to add a 'new' infront of mongoose.Types.ObjectId for latest mongo version
+    return new mongoose.Types.ObjectId(id); 
 };
-exports.isMongoDbObjectId = someId => {
-    return new RegExp('^[0-9a-fA-F]{24}$').test(someId);
+exports.isMongoDbObjectId = id => {
+    return new RegExp('^[0-9a-fA-F]{24}$').test(id);
 };
 
 
