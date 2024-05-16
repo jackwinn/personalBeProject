@@ -11,10 +11,10 @@ module.exports = (app: Express) => {
   app.post("/user/:action", async (req, res) => {
     const action = req.params.action;
     const reqbody = req.body;
-    // console.log(`action: ${action}`)
-    // console.log(reqbody);
+    console.log(`action: ${action}`)
+    console.log(reqbody);
 
-    const requestBodyValidation = (action: string, reqbody: any) => {
+    const payloadValidation = (action: string, reqbody: any) => {
       if (action === "create" || action === "login") {
         if (!reqbody.email || !reqbody.password || !reqbody.role) {
           return {
@@ -46,7 +46,8 @@ module.exports = (app: Express) => {
       login: async () => {
         const result = await userComponent.login(
           reqbody.email,
-          reqbody.password
+          reqbody.password,
+          reqbody.role
         );
         return result;
       },
@@ -62,7 +63,7 @@ module.exports = (app: Express) => {
 
     // Check if the requested action exists
     if (actionHandlers[action]) {
-      const validation = requestBodyValidation(action, reqbody);
+      const validation = payloadValidation(action, reqbody);
       if (validation.ok) {
         try {
           const result = await actionHandlers[action]();
