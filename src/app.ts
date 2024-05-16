@@ -11,9 +11,11 @@ const mongoUrl =
   process.env.MONGODB_URL ||
   "mongodb+srv://localpersonaldatabase:WWWm0ng0@personaldatabase.wmkztyx.mongodb.net/?retryWrites=true&w=majority&appName=personaldatabase";
 // const port = nconf.get("port");
-const port = process.env.PORT || 1888;
+const port = process.env.PORT || 1022;
 const accessControlAllowOrigin = "*";
 const app = express();
+const cors = require('cors');
+
 const echo = `backend-services`;
 const options = {
   autoIndex: false, // Don't build indexes
@@ -22,6 +24,10 @@ const options = {
   //useNewUrlParser: true,
   //useUnifiedTopology: true,
 };
+
+//Cross-Origin Resource Sharing, is needed to handle the security restrictions
+//enforced by web browsers known as the Same-Origin Policy (SOP)
+app.use(cors());
 
 //mongoose
 mongoose.connect(mongoUrl, options);

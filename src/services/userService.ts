@@ -8,7 +8,7 @@ const dbs = require("../libs/db");
 const userComponent = require("../components/userComponents");
 
 module.exports = (app: Express) => {
-  app.post("/user/:action", async (req, res) => {
+  app.post("/users/:action", async (req, res) => {
     const action = req.params.action;
     const reqbody = req.body;
     console.log(`action: ${action}`)
@@ -49,6 +49,7 @@ module.exports = (app: Express) => {
           reqbody.password,
           reqbody.role
         );
+        console.log(result)
         return result;
       },
       getById: async () => {
