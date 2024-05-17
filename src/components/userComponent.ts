@@ -25,7 +25,7 @@ const isEmailUnique = async (email: string, role: string) => {
 };
 
 //get user password, hash it, then save it to users table
-exports.create = async (email: string, password: string, role: string) => {
+const create = async (email: string, password: string, role: string) => {
   const isAccountUnique = await isEmailUnique(email, role);
   // console.log(isAccountUnique)
   if (isAccountUnique) {
@@ -62,7 +62,7 @@ exports.create = async (email: string, password: string, role: string) => {
   }
 };
 
-exports.login = async (email: string, password: string, role: string) => {
+const login = async (email: string, password: string, role: string) => {
   let pipeline = [
     {
       $match: {
@@ -122,6 +122,8 @@ const getById = async (id: string) => {
   }
 };
 
-module.exports = {
-  getById,
+export const userComponent = {
+  create: create,
+  login: login,
+  getById: getById,
 };

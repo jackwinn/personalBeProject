@@ -5,7 +5,7 @@ import { Express } from "express";
 const dbs = require("../libs/db");
 
 //component
-const userComponent = require("../components/userComponent");
+import { userComponent } from "../components/userComponent";
 
 module.exports = (app: Express) => {
   app.post("/user/:action", async (req, res) => {
