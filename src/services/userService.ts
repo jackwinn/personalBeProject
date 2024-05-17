@@ -2,16 +2,16 @@
 import { Express } from "express";
 
 //lib
-const db = require("../libs/db");
+const dbs = require("../libs/db");
 
 //component
-const userComponent = require("../components/userComponents");
+const userComponent = require("../components/userComponent");
 
 module.exports = (app: Express) => {
   app.post("/user/:action", async (req, res) => {
     const action = req.params.action;
     const reqbody = req.body;
-    console.log(`action: ${action}`)
+    console.log(`action: ${action}`);
     console.log(reqbody);
 
     const payloadValidation = (action: string, reqbody: any) => {
@@ -23,7 +23,7 @@ module.exports = (app: Express) => {
         }
       }
       if (action === "getById") {
-        if (!reqbody.userId || !db.isMongoDbObjectId(reqbody.userId)) {
+        if (!reqbody.userId || !dbs.isMongoDbObjectId(reqbody.userId)) {
           return {
             ok: false,
           };
@@ -49,7 +49,7 @@ module.exports = (app: Express) => {
           reqbody.password,
           reqbody.role
         );
-        console.log(result)
+        console.log(result);
         return result;
       },
       getById: async () => {

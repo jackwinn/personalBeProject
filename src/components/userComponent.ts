@@ -113,11 +113,15 @@ exports.login = async (email: string, password: string, role: string) => {
 };
 
 //get user by id
-exports.getById = async (id: string) => {
+const getById = async (id: string) => {
   try {
     const result = await userModel.findById(id);
     return result;
   } catch (err) {
     throw err;
   }
+};
+
+module.exports = {
+  getById,
 };
