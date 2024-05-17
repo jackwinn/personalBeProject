@@ -2,19 +2,17 @@
 import { Request, Response, NextFunction } from "express";
 const mongoose = require("mongoose");
 const express = require("express");
-// const nconf = require("nconf");
-// nconf.file("./config.json");
+const nconf = require("nconf");
+nconf.file("./config.json");
 
 //variable
-// const mongoUrl = nconf.get("mongodb-url");
-const mongoUrl =
-  process.env.MONGODB_URL ||
-  "mongodb+srv://localpersonaldatabase:WWWm0ng0@personaldatabase.wmkztyx.mongodb.net/?retryWrites=true&w=majority&appName=personaldatabase";
-// const port = nconf.get("port");
-const port = process.env.PORT || 1022;
+let mongoUrl = nconf.get("mongodb-url");
+mongoUrl = process.env.MONGODB_URL || mongoUrl;
+let port = nconf.get("port");
+port = process.env.PORT || port;
 const accessControlAllowOrigin = "*";
 const app = express();
-const cors = require('cors');
+const cors = require("cors");
 
 const echo = `backend-services`;
 const options = {

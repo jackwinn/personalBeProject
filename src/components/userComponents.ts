@@ -67,6 +67,7 @@ exports.login = async (email: string, password: string, role: string) => {
     {
       $match: {
         "personal.email": new RegExp(lib.autoEscapeRegExp(email), "i"),
+        role: role,
       },
     },
   ];

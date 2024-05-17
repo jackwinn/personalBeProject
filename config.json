@@ -1,0 +1,4 @@
+{
+    "port": 1022,
+    "mongodb-url":"mongodb+srv://localpersonaldatabase:WWWm0ng0@personaldatabase.wmkztyx.mongodb.net/?retryWrites=true&w=majority&appName=personaldatabase"
+}

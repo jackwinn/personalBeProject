@@ -2,13 +2,13 @@
 import { Express } from "express";
 
 //lib
-const dbs = require("../libs/db");
+const db = require("../libs/db");
 
 //component
 const userComponent = require("../components/userComponents");
 
 module.exports = (app: Express) => {
-  app.post("/users/:action", async (req, res) => {
+  app.post("/user/:action", async (req, res) => {
     const action = req.params.action;
     const reqbody = req.body;
     console.log(`action: ${action}`)
@@ -23,7 +23,7 @@ module.exports = (app: Express) => {
         }
       }
       if (action === "getById") {
-        if (!reqbody.userId || !dbs.isMongoDbObjectId(reqbody.userId)) {
+        if (!reqbody.userId || !db.isMongoDbObjectId(reqbody.userId)) {
           return {
             ok: false,
           };
