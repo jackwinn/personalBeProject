@@ -1,4 +1,8 @@
 {
     "port": 1022,
-    "mongodb-url":"mongodb+srv://localpersonaldatabase:WWWm0ng0@personaldatabase.wmkztyx.mongodb.net/?retryWrites=true&w=majority&appName=personaldatabase"
+    "mongodb-url":"mongodb+srv://localpersonaldatabase:WWWm0ng0@personaldatabase.wmkztyx.mongodb.net/?retryWrites=true&w=majority&appName=personaldatabase",
+    "access-control-allow-origin": "*",
+    "paging": {
+      "limit": 10
+    }
 }

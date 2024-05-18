@@ -1,5 +1,8 @@
 //package
 import { Express } from "express";
+import { Request, Response, NextFunction } from "express";
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 //lib
 const dbs = require("../libs/db");
@@ -79,5 +82,40 @@ module.exports = (app: Express) => {
     } else {
       return res.status(412).end(); // Precondition Failed for unsupported action
     }
+  });
+
+  const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
+
+    if (authHeader) {
+      const token = authHeader.split(" ")[1];
+      console.log(token);
+      jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET,
+        (err: any, data: any) => {
+          if (err) {
+            return res.sendStatus(403); // Forbidden
+          }
+          console.log("user");
+          console.log(data);
+          req.body.userId = data.userId;
+          next();
+        }
+      );
+    } else {
+      res.sendStatus(401); // Unauthorized
+    }
+  };
+
+  app.get("/protected-route", authenticateJWT, async (req, res) => {
+    // if (!dbs.isMongoDbObjectId(req.body.userId)) {
+      const result = await userComponent.getById(req.body.userId);
+      if (result) {
+        return res.json({ message: "This is a protected route", user: result });
+      }
+    // } else {
+    //   return res.status(422).end();
+    // }
   });
 };

@@ -10,7 +10,7 @@ let mongoUrl = nconf.get("mongodb-url");
 mongoUrl = process.env.MONGODB_URL || mongoUrl;
 let port = nconf.get("port");
 port = process.env.PORT || port;
-const accessControlAllowOrigin = "*";
+const accessControlAllowOrigin = nconf.get("access-control-allow-origin");
 const app = express();
 const cors = require("cors");
 
@@ -96,6 +96,7 @@ app.get("/", (req: Request, res: Response) => {
 require("./services/userService")(app);
 
 //listens for incoming connections on the specified port
+//and run our application on port number
 const server = app.listen(port, () => {
   let host = server.address().address;
   //logs a message indicating the server's address and port when it starts successfully

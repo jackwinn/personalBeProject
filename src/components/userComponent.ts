@@ -1,5 +1,7 @@
 //package
 const bycrpt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 // model
 const userModel = require("../models/userModel");
@@ -62,6 +64,7 @@ const create = async (email: string, password: string, role: string) => {
   }
 };
 
+//authenticate user
 const login = async (email: string, password: string, role: string) => {
   let pipeline = [
     {
@@ -81,6 +84,12 @@ const login = async (email: string, password: string, role: string) => {
         currentUser.personal.password
       );
       if (isPasswordMatch) {
+        const token = jwt.sign(
+          { userId: currentUser._id, role: currentUser.role },
+          process.env.ACCESS_TOKEN_SECRET,
+          { expiresIn: '1h' }
+        );
+
         const update = {
           lastLogin: new Date(),
         };
@@ -95,8 +104,10 @@ const login = async (email: string, password: string, role: string) => {
         //remove sensitive or unused information
         // delete updatedUser.created;
         // delete updatedUser.updated;
-        // console.log(user);
-        return updatedUser;
+
+        // updatedUser.token = token
+
+        return { token: token };
       } else {
         return {
           message: "You have entered an invalid password",
