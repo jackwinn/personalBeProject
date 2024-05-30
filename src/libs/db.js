@@ -28,7 +28,7 @@ exports.formPipeline = (...stages) => {
   return pipeline;
 };
 
-const newId = () => {
+exports.newId = () => {
   return new mongoose.Types.ObjectId();
 };
 

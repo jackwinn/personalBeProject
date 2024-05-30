@@ -10,17 +10,17 @@ module.exports = (app) => {
   app.post("/eTenancy/:action", async (req, res) => {
     const action = req.params.action;
     const reqbody = req.body;
-    console.log(`action: ${action}`);
-    console.log(reqbody);
+    // console.log(`action: ${action}`);
+    // console.log(reqbody);
 
     const payloadValidation = (action, reqbody) => {
-      // if (action === "create") {
-      //   if (!reqbody.email || !reqbody.password || !reqbody.role) {
-      //     return {
-      //       ok: false,
-      //     };
-      //   }
-      // }
+      if (action === "create" || action === "edit") {
+        if (!reqbody.propertyName || !reqbody.tenantName) {
+          return {
+            ok: false,
+          };
+        }
+      }
       if (action === "search") {
         if (!reqbody.search || !reqbody.paging) {
           return {
@@ -29,7 +29,7 @@ module.exports = (app) => {
         }
       }
       if (action === "getById") {
-        if (!reqbody.userId || !dbs.isMongoDbObjectId(reqbody.userId)) {
+        if (!reqbody._id || !dbs.isMongoDbObjectId(reqbody._id)) {
           return {
             ok: false,
           };
@@ -42,29 +42,44 @@ module.exports = (app) => {
 
     const actionHandlers = {
       create: async () => {
-        const result = await etenancyComponent.create(
-          reqbody,
-          //   reqbody.email,
-          //   reqbody.password,
-          //   reqbody.role
-        );
+        const result = await etenancyComponent.create(reqbody);
+        return result;
+      },
+      edit: async () => {
+        const result = await etenancyComponent.edit(reqbody);
         return result;
       },
       search: async () => {
         const result = await etenancyComponent.search(
           reqbody.search,
-          reqbody.paging,
+          reqbody.paging
         );
-        console.log(result);
+        // console.log(result);
         return result;
       },
       getById: async () => {
-        const result = await etenancyComponent.getById(reqbody.etenancyId);
+        const result = await etenancyComponent.getById(reqbody._id);
+        return result;
+      },
+      previewAgreement: async () => {
+        const result = await etenancyComponent.previewAgreement(reqbody);
         return result;
       },
     };
 
     const handleSuccess = (result) => {
+      if (action === "previewAgreement") {
+        // console.log("PEEK AGREEMENT")
+        // console.log(result)
+        if (result.ok) {
+          res.writeHead(200, { "Content-Type": "application/pdf" });
+          // console.log(typeof(result.pdfAgreement))
+          res.write(result.pdfAgreement);
+          res.end();
+          return;
+        }
+      }
+
       return res.json(result);
     };
 

@@ -93,6 +93,7 @@ app.get("/", (req, res) => {
 
 //service
 require("./src/services/userService")(app);
+require("./src/services/etenancyService")(app);
 
 //listens for incoming connections on the specified port
 //and run our application on port number
