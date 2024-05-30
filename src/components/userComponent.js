@@ -10,7 +10,7 @@ const userModel = require("../models/userModel");
 const db = require("../libs/db");
 const lib = require("../libs/lib");
 
-const isEmailUnique = async (email: string, role: string) => {
+const isEmailUnique = async (email, role) => {
   // console.log(email, role)
   let match = {
     "personal.email": email,
@@ -27,7 +27,7 @@ const isEmailUnique = async (email: string, role: string) => {
 };
 
 //get user password, hash it, then save it to users table
-const create = async (email: string, password: string, role: string) => {
+exports.create = async (email, password, role) => {
   const isAccountUnique = await isEmailUnique(email, role);
   // console.log(isAccountUnique)
   if (isAccountUnique) {
@@ -65,7 +65,7 @@ const create = async (email: string, password: string, role: string) => {
 };
 
 //authenticate user
-const login = async (email: string, password: string, role: string) => {
+exports.login = async (email, password, role) => {
   let pipeline = [
     {
       $match: {
@@ -124,7 +124,7 @@ const login = async (email: string, password: string, role: string) => {
 };
 
 //get user by id
-const getById = async (id: string) => {
+exports.getById = async (id) => {
   try {
     const result = await userModel.findById(id);
     return result;
@@ -133,8 +133,4 @@ const getById = async (id: string) => {
   }
 };
 
-export const userComponent = {
-  create: create,
-  login: login,
-  getById: getById,
-};
+

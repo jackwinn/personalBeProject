@@ -1,29 +1,28 @@
 //package
-import { Express } from "express";
 
 //lib
 const dbs = require("../libs/db");
 
 //component
-import { etenancyComponent } from "../components/etenancyComponent";
+const etenancyComponent = require("../components/etenancyComponent");
 
-module.exports = (app: Express) => {
-  app.post("/etenancy/:action", async (req, res) => {
+module.exports = (app) => {
+  app.post("/eTenancy/:action", async (req, res) => {
     const action = req.params.action;
     const reqbody = req.body;
     console.log(`action: ${action}`);
     console.log(reqbody);
 
-    const payloadValidation = (action: string, reqbody: any) => {
-      if (action === "create") {
-        if (!reqbody.email || !reqbody.password || !reqbody.role) {
-          return {
-            ok: false,
-          };
-        }
-      }
+    const payloadValidation = (action, reqbody) => {
+      // if (action === "create") {
+      //   if (!reqbody.email || !reqbody.password || !reqbody.role) {
+      //     return {
+      //       ok: false,
+      //     };
+      //   }
+      // }
       if (action === "search") {
-        if (!reqbody.email || !reqbody.password || !reqbody.role) {
+        if (!reqbody.search || !reqbody.paging) {
           return {
             ok: false,
           };
@@ -44,17 +43,17 @@ module.exports = (app: Express) => {
     const actionHandlers = {
       create: async () => {
         const result = await etenancyComponent.create(
-        //   reqbody.email,
-        //   reqbody.password,
-        //   reqbody.role
+          reqbody,
+          //   reqbody.email,
+          //   reqbody.password,
+          //   reqbody.role
         );
         return result;
       },
       search: async () => {
         const result = await etenancyComponent.search(
-        //   reqbody.email,
-        //   reqbody.password,
-        //   reqbody.role
+          reqbody.search,
+          reqbody.paging,
         );
         console.log(result);
         return result;
@@ -65,7 +64,7 @@ module.exports = (app: Express) => {
       },
     };
 
-    const handleSuccess = (result: any) => {
+    const handleSuccess = (result) => {
       return res.json(result);
     };
 

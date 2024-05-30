@@ -12,16 +12,16 @@ const lib = require("../libs/lib");
 const templateConfig = nconf.get('template');
 const pagingConfig = nconf.get("paging");
 
-const create = async (form: any) => {
-    // console.log("agreementData")
+exports.create = async (form) => {
+    console.log("agreementData")
     // console.log(form)
     // console.log(form.dateOfAgreement)  
 
     const newEtenancy = new etenancyModel({
-        _id: db.newId(),     
+        _id: db.newId(),
         // property details 
         propertyUnit: {
-            _id: form.propertyUnit,
+            // _id: form.propertyUnit,
             fullAddress: form.propertyAddress,
             roomType: form.propertyRoomType,
             code: form.propertyCode,
@@ -30,97 +30,97 @@ const create = async (form: any) => {
             carParkRental: form.carParkRental,
             basicMonthlyRental: form.basicMonthlyRental,
         },
-        propertyRoom: {
-            _id: form.propertyRoom,
-        },
-        // tenant details 1 
-        mainTenant: {
-            _id: form.tenantId1,
-            title: form.tenantTitle1,
-            race: form.tenantRace1,
-            otherRace: form.tenantOtherRace1
-        },
-        // tenant details 2
-        subTenant: {
-            name: form.tenantName2,
-            identity: {
-                number: form.tenantIdentityNo2,
-                type: form.tenantIdentityType2,
-            },
-            mobile: form.tenantMobile2,
-            email: form.tenantEmail2,
-            gender: form.tenantGender2,
-            title: form.tenantTitle2,
-            race: form.tenantRace2,
-            otherRace: form.tenantOtherRace2
-        },
+        // propertyRoom: {
+        //     _id: form.propertyRoom,
+        // },
+        // // tenant details 1 
+        // mainTenant: {
+        //     _id: form.tenantId1,
+        //     title: form.tenantTitle1,
+        //     race: form.tenantRace1,
+        //     otherRace: form.tenantOtherRace1
+        // },
+        // // tenant details 2
+        // subTenant: {
+        //     name: form.tenantName2,
+        //     identity: {
+        //         number: form.tenantIdentityNo2,
+        //         type: form.tenantIdentityType2,
+        //     },
+        //     mobile: form.tenantMobile2,
+        //     email: form.tenantEmail2,
+        //     gender: form.tenantGender2,
+        //     title: form.tenantTitle2,
+        //     race: form.tenantRace2,
+        //     otherRace: form.tenantOtherRace2
+        // },
 
-        //access card details
-        accessCardNo: form.accessCardNo,
+        // //access card details
+        // accessCardNo: form.accessCardNo,
 
-        //deposit details
-        deposit: {
-            advanceRentalMonth: form.advanceRentalMonth,
-            advanceRental: form.advanceRental,
-            securityMonth: form.securityDepositMonth,
-            security: form.securityDeposit,
-            utilityMonth: form.utilityDepositMonth,
-            utility: form.utilityDeposit,
-            accessCard: form.accessCardDeposit,
-            assuranceAgreement: form.assuranceAgreement,
-            totalToBePaid: form.depositTotalToBePaid,
-        },
+        // //deposit details
+        // deposit: {
+        //     advanceRentalMonth: form.advanceRentalMonth,
+        //     advanceRental: form.advanceRental,
+        //     securityMonth: form.securityDepositMonth,
+        //     security: form.securityDeposit,
+        //     utilityMonth: form.utilityDepositMonth,
+        //     utility: form.utilityDeposit,
+        //     accessCard: form.accessCardDeposit,
+        //     assuranceAgreement: form.assuranceAgreement,
+        //     totalToBePaid: form.depositTotalToBePaid,
+        // },
 
-        tenantPayment: {
-            amount: !form.tenantPaidAmount ? 0 : form.tenantPaidAmount,
-            date: form.tenantPaidDate ? form.tenantPaidDate : undefined,
-        },
-        balanceAmount: parseInt(form.balanceAmount),
+        // tenantPayment: {
+        //     amount: !form.tenantPaidAmount ? 0 : form.tenantPaidAmount,
+        //     date: form.tenantPaidDate ? form.tenantPaidDate : undefined,
+        // },
+        // balanceAmount: parseInt(form.balanceAmount),
 
-        // tenancy details
-        tenancy: {
-            period: form.tenancyPeriod,
-            otherPeriod: form.tenancyOtherPeriod,
-            startDate: form.tenancyStartDate,
-            endDate: form.tenancyEndDate,
-        },
+        // // tenancy details
+        // tenancy: {
+        //     period: form.tenancyPeriod,
+        //     otherPeriod: form.tenancyOtherPeriod,
+        //     startDate: form.tenancyStartDate,
+        //     endDate: form.tenancyEndDate,
+        // },
 
-        contract: {
-            host: form.hostId,
-            hostSignDate: form.hostSignDate,
-            isHostSigned: false,
-            tenant: form.tenantId1,
-            tenantSignDate: form.tenantSignDate1,
-            isTenantSigned: false
-        },
+        // contract: {
+        //     host: form.hostId,
+        //     hostSignDate: form.hostSignDate,
+        //     isHostSigned: false,
+        //     tenant: form.tenantId1,
+        //     tenantSignDate: form.tenantSignDate1,
+        //     isTenantSigned: false
+        // },
 
-        dateOfAgreement: form.dateOfAgreement,
-        status: "New",
+        // dateOfAgreement: form.dateOfAgreement,
+        // status: "New",
 
-        emergencyContact: {
-            name: form.emergencyContactName,
-            title: form.emergencyContactTitle,
-            mobile: form.emergencyContactMobile,
-            relationWithTenant: form.emergencyContactRelationWithTenant,
-        },
-        referee: {
-            name: form.refereeName,
-            title: form.refereeTitle,
-            mobile: form.refereeMobile,
-            relationWithTenant: form.refereeRelationWithTenant,
-        },
+        // emergencyContact: {
+        //     name: form.emergencyContactName,
+        //     title: form.emergencyContactTitle,
+        //     mobile: form.emergencyContactMobile,
+        //     relationWithTenant: form.emergencyContactRelationWithTenant,
+        // },
+        // referee: {
+        //     name: form.refereeName,
+        //     title: form.refereeTitle,
+        //     mobile: form.refereeMobile,
+        //     relationWithTenant: form.refereeRelationWithTenant,
+        // },
     });
 
     try {
-        const result = await newEtenancy.save()     
+        const result = await newEtenancy.save()
         return result
 
     } catch (err) {
         throw (err)
     }
-  };
+};
 
-  const searchCount = async (pipelines) => {
+const searchCount = async (pipelines) => {
     const count = {
         $count: 'records'
     };
@@ -179,7 +179,7 @@ const searchOnly = async (pipelines, paging) => {
     }
 };
 
-const search = async (search, paging) => {
+exports.search = async (search, paging) => {
     let pipelines = []
     let match = {}
 
@@ -224,17 +224,11 @@ const search = async (search, paging) => {
     }
 };
 
-const getById = async (id: string) => {
+const getById = async (id) => {
     try {
-      const result = await etenancyModel.findById(id);
-      return result;
+        const result = await etenancyModel.findById(id);
+        return result;
     } catch (err) {
-      throw err;
+        throw err;
     }
-  };
-
-export const etenancyComponent = {
-    create: create,
-    search: search,
-    getById: getById,
-  };
+};

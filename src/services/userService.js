@@ -1,6 +1,4 @@
 //package
-import { Express } from "express";
-import { Request, Response, NextFunction } from "express";
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -8,16 +6,16 @@ require("dotenv").config();
 const dbs = require("../libs/db");
 
 //component
-import { userComponent } from "../components/userComponent";
+const userComponent  = require("../components/userComponent");
 
-module.exports = (app: Express) => {
+module.exports = (app) => {
   app.post("/user/:action", async (req, res) => {
     const action = req.params.action;
     const reqbody = req.body;
     console.log(`action: ${action}`);
     console.log(reqbody);
 
-    const payloadValidation = (action: string, reqbody: any) => {
+    const payloadValidation = (action, reqbody) => {
       if (action === "create" || action === "login") {
         if (!reqbody.email || !reqbody.password || !reqbody.role) {
           return {
@@ -61,7 +59,7 @@ module.exports = (app: Express) => {
       },
     };
 
-    const handleSuccess = (result: any) => {
+    const handleSuccess = (result) => {
       return res.json(result);
     };
 
@@ -84,7 +82,7 @@ module.exports = (app: Express) => {
     }
   });
 
-  const authenticateJWT = (req: Request, res: Response, next: NextFunction) => {
+  const authenticateJWT = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (authHeader) {
@@ -93,7 +91,7 @@ module.exports = (app: Express) => {
       jwt.verify(
         token,
         process.env.ACCESS_TOKEN_SECRET,
-        (err: any, data: any) => {
+        (err, data) => {
           if (err) {
             return res.sendStatus(403); // Forbidden
           }
@@ -110,10 +108,10 @@ module.exports = (app: Express) => {
 
   app.get("/protected-route", authenticateJWT, async (req, res) => {
     // if (!dbs.isMongoDbObjectId(req.body.userId)) {
-      const result = await userComponent.getById(req.body.userId);
-      if (result) {
-        return res.json({ message: "This is a protected route", user: result });
-      }
+    const result = await userComponent.getById(req.body.userId);
+    if (result) {
+      return res.json({ message: "This is a protected route", user: result });
+    }
     // } else {
     //   return res.status(422).end();
     // }

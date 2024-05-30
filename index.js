@@ -1,5 +1,4 @@
 //package
-import { Request, Response, NextFunction } from "express";
 const mongoose = require("mongoose");
 const express = require("express");
 const nconf = require("nconf");
@@ -30,8 +29,8 @@ app.use(cors());
 //mongoose
 mongoose.connect(mongoUrl, options);
 
-mongoose.connection.on("error", (e: string) => {
-  console.log("<mongo> error -> " + e);
+mongoose.connection.on("error", (err) => {
+  console.log("<mongo> error -> " + err);
 });
 
 mongoose.connection.on("connected", () => {
@@ -50,8 +49,8 @@ mongoose.connection.on("reconnected", () => {
   console.log("<mongo> reconnected => " + mongoUrl);
 });
 
-mongoose.connection.on("timeout", (e: string) => {
-  console.log("<mongo> timeout => " + e);
+mongoose.connection.on("timeout", (err) => {
+  console.log("<mongo> timeout => " + err);
 });
 
 mongoose.connection.on("close", () => {
@@ -63,7 +62,7 @@ app.use(express.json({ limit: "4mb" }));
 //to allow application to accept url encoded data with 4mb limit
 app.use(express.urlencoded({ limit: "4mb", extended: true }));
 
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((req, res, next) => {
   // Website you wish to allow to connect
   res.setHeader("Access-Control-Allow-Origin", accessControlAllowOrigin);
 
@@ -88,12 +87,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 //not to include the "X-Powered-By" header in any HTTP responses sent by your application
 app.disable("x-powered-by");
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", (req, res) => {
   res.end(echo);
 });
 
 //service
-require("./services/userService")(app);
+require("./src/services/userService")(app);
 
 //listens for incoming connections on the specified port
 //and run our application on port number
