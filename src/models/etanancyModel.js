@@ -5,7 +5,6 @@ const ETenanciesSchema = new Schema(
   {
     _id: Schema.ObjectId,
     property: {
-      name: String,
       address: String,
       monthlyRental: Number,
     },
@@ -17,9 +16,16 @@ const ETenanciesSchema = new Schema(
         number: { type: String },
         type: { type: String },
       },
+      signatureImage: String,
+      signDate: Date,
     },
-    deposit: {
-      booking: Number,
+    host: {
+      name: String,
+      identityNo: String,
+      signatureImage: String,
+      signDate: Date,
+    },
+    deposit: {   
       security: Number,
       utility: Number,
       accessCard: Number,

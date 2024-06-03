@@ -4,8 +4,5 @@
     "access-control-allow-origin": "*",
     "paging": {
       "limit": 10
-    },
-    "template": {
-      "tenancyAgreement": "https://iprofstore.blob.core.windows.net/pdf/Tenancy_Agreement.pdf"
     }
 }

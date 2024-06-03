@@ -10,12 +10,12 @@ module.exports = (app) => {
   app.post("/eTenancy/:action", async (req, res) => {
     const action = req.params.action;
     const reqbody = req.body;
-    // console.log(`action: ${action}`);
-    // console.log(reqbody);
+    console.log(`action: ${action}`);
+    console.log(reqbody);
 
     const payloadValidation = (action, reqbody) => {
       if (action === "create" || action === "edit") {
-        if (!reqbody.propertyName || !reqbody.tenantName) {
+        if (!reqbody.propertyAddress || !reqbody.tenantName1) {
           return {
             ok: false,
           };
@@ -28,13 +28,13 @@ module.exports = (app) => {
           };
         }
       }
-      if (action === "getById") {
+      if (action === "getById" || action === "previewAgreement" || action === "signAgreement") {
         if (!reqbody._id || !dbs.isMongoDbObjectId(reqbody._id)) {
           return {
             ok: false,
           };
         }
-      }
+      }   
       return {
         ok: true,
       };
@@ -63,6 +63,14 @@ module.exports = (app) => {
       },
       previewAgreement: async () => {
         const result = await etenancyComponent.previewAgreement(reqbody);
+        return result;
+      },
+      signAgreement: async () => {
+        const result = await etenancyComponent.signAgreement(
+          reqbody._id,
+          reqbody.hostName,
+          reqbody.hostSignature
+        );
         return result;
       },
     };

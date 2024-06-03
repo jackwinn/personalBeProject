@@ -2,6 +2,8 @@
 const nconf = require("nconf");
 const { PDFDocument, StandardFonts, TextAlignment } = require("pdf-lib");
 const fetch = require("node-fetch");
+const fs = require("fs");
+const path = require("path");
 
 // model
 const etenancyModel = require("../models/etanancyModel");
@@ -11,46 +13,39 @@ const db = require("../libs/db");
 const lib = require("../libs/lib");
 
 //variable
-const templateConfig = nconf.get("template");
 const pagingConfig = nconf.get("paging");
 
 exports.create = async (form) => {
-  console.log("agreementData");
+  console.log("create agreementData");
   console.log(form);
-  // console.log(form.dateOfAgreement)
 
   const newEtenancy = new etenancyModel({
     _id: db.newId(),
     property: {
-      name: form.propertyName,
       address: form.propertyAddress,
       monthlyRental: form.monthlyRental,
     },
     tenant: {
-      name: form.tenantName,
-      email: form.tenantEmail,
-      mobile: form.tenantMobile,
+      name: form.tenantName1,
+      email: form.tenantEmail1,
+      mobile: form.tenantMobile1,
       identity: {
-        number: form.tenantIdentityNo,
-        type: form.tenantIdentityType,
+        number: form.tenantIdentityNo1,
+        type: form.tenantIdentityType1,
       },
     },
     tenancy: {
-      period:
-        form.tenancyPeriod !== "Other"
-          ? form.tenancyPeriod
-          : form.tenancyOtherPeriod,
+      period: form.tenancyPeriod,
       startDate: form.tenancyStartDate,
       endDate: form.tenancyEndDate,
     },
     deposit: {
-      booking: form.bookingDeposit,
       security: form.securityDeposit,
       utility: form.utilityDeposit,
       accessCard: form.accessCardDeposit,
       parkingCard: form.parkingCardDeposit,
     },
-    dateOfAgreement: new Date(),
+    dateOfAgreement: form.dateOfAgreement,
     status: "New",
   });
 
@@ -63,64 +58,63 @@ exports.create = async (form) => {
 };
 
 exports.edit = async (form) => {
-    console.log("agreementData");
-    console.log(form);
-  
-    const update = {   
-      property: {
-        name: form.propertyName,
-        address: form.propertyAddress,
-        monthlyRental: form.monthlyRental,
+  console.log("edit agreementData");
+  console.log(form);
+
+  const update = {
+    property: {
+      address: form.propertyAddress,
+      monthlyRental: form.monthlyRental,
+    },
+    tenant: {
+      name: form.tenantName1,
+      email: form.tenantEmail1,
+      mobile: form.tenantMobile1,
+      identity: {
+        number: form.tenantIdentityNo1,
+        type: form.tenantIdentityType1,
       },
-      tenant: {
-        name: form.tenantName,
-        email: form.tenantEmail,
-        mobile: form.tenantMobile,
-        identity: {
-          number: form.tenantIdentityNo,
-          type: form.tenantIdentityType,
-        },
-      },
-      tenancy: {
-        period:
-          form.tenancyPeriod !== "Other"
-            ? form.tenancyPeriod
-            : form.tenancyOtherPeriod,
-        startDate: form.tenancyStartDate,
-        endDate: form.tenancyEndDate,
-      },
-      deposit: {
-        booking: form.bookingDeposit,
-        security: form.securityDeposit,
-        utility: form.utilityDeposit,
-        accessCard: form.accessCardDeposit,
-        parkingCard: form.parkingCardDeposit,
-      },
-    };
-  
-    try {
-        const result = await eTenancies.findByIdAndUpdate(form._id, update, dbs.updateOption);        
-        return result
-    } catch (err) {
-      throw err;
-    }
+    },
+    tenancy: {
+      period: form.tenancyPeriod,
+      startDate: form.tenancyStartDate,
+      endDate: form.tenancyEndDate,
+    },
+    deposit: {
+      security: form.securityDeposit,
+      utility: form.utilityDeposit,
+      accessCard: form.accessCardDeposit,
+      parkingCard: form.parkingCardDeposit,
+    },
   };
 
-const searchCount = async (pipelines) => {
+  try {
+    const result = await etenancyModel.findByIdAndUpdate(
+      form._id,
+      update,
+      db.updateOption
+    );
+    return result;
+  } catch (err) {
+    throw err;
+  }
+};
+
+const searchCount = async (pipeline) => {
   const count = {
     $count: "records",
   };
 
-  pipelines.push(count);
+  pipeline.push(count);
 
   let summary = {
     records: 0,
     pages: 0,
   };
 
-  //console.log(pipelines);
+  //console.log(pipeline);
   try {
-    const result = await etenancyModel.aggregate(pipelines);
+    const result = await etenancyModel.aggregate(pipeline);
     // console.log('count..');
     // console.log(result);
     if (result.length > 0) {
@@ -134,7 +128,7 @@ const searchCount = async (pipelines) => {
   }
 };
 
-const searchOnly = async (pipelines, paging) => {
+const searchOnly = async (pipeline, paging) => {
   let skip,
     limit = { $limit: pagingConfig.limit };
   const sort = {
@@ -150,13 +144,13 @@ const searchOnly = async (pipelines, paging) => {
       }
     }
   }
-  pipelines.push(sort);
-  if (skip) pipelines.push(skip);
-  pipelines.push(limit);
+  pipeline.push(sort);
+  if (skip) pipeline.push(skip);
+  pipeline.push(limit);
 
-  // console.log(pipelines);
+  // console.log(pipeline);
   try {
-    const result = await etenancyModel.aggregate(pipelines);
+    const result = await etenancyModel.aggregate(pipeline);
     //console.log('data.');
     //console.log(result);
     return result;
@@ -166,7 +160,7 @@ const searchOnly = async (pipelines, paging) => {
 };
 
 exports.search = async (search, paging) => {
-  let pipelines = [];
+  let pipeline = [];
   let match = {};
 
   if (search.status) {
@@ -176,10 +170,16 @@ exports.search = async (search, paging) => {
   if (search.custom) {
     match.$or = [
       {
-        "tenant.personal.name": new RegExp(search.custom, "i"),
+        "tenant.name": new RegExp(search.custom, "i"),
       },
       {
-        "property.name": new RegExp(search.custom, "i"),
+        "tenant.email": new RegExp(search.custom, "i"),
+      },
+      {
+        "tenant.mobile": new RegExp(search.custom, "i"),
+      },
+      {
+        "property.address": new RegExp(search.custom, "i"),
       },
     ];
   }
@@ -188,16 +188,18 @@ exports.search = async (search, paging) => {
     $match: match,
   };
 
+  pipeline = db.formPipeline(matchStage);
+
   try {
     let searchSummary;
 
     if (!paging || !paging.page || paging.page === 1) {
-      const pipelinesCount = [...pipelines];
-      searchSummary = await searchCount(pipelinesCount);
+      const pipelineCount = [...pipeline];
+      searchSummary = await searchCount(pipelineCount);
     }
 
-    const pipelinesData = [...pipelines];
-    const searchData = await searchOnly(pipelinesData, paging);
+    const pipelineData = [...pipeline];
+    const searchData = await searchOnly(pipelineData, paging);
 
     let result = {
       data: searchData,
@@ -211,7 +213,7 @@ exports.search = async (search, paging) => {
   }
 };
 
-exports.getById = async (etenacyId) => {
+const getById = async (etenacyId) => {
   try {
     const result = await etenancyModel.findById(etenacyId);
     return result;
@@ -219,11 +221,10 @@ exports.getById = async (etenacyId) => {
     throw err;
   }
 };
+exports.getById = getById;
 
 const specialFormatting = (fieldName, value, pdfType = "") => {
   if (fieldName === "tenantIdentityNo1[0]") return `NRIC : ${value}`;
-  if (fieldName === "hostName") return `(${value})`;
-  if (fieldName === "tenantPaidDate") return `(${value})`;
   if (fieldName === "securityDeposit" && pdfType === "Tenancy") {
     if (parseInt(value) === 0) return `Zero Deposit (RM ${value}) only`;
     else return `Ringgit Malaysia (RM ${value}) only`;
@@ -266,24 +267,24 @@ const setText = (
   }
 };
 
-const selectRadioInput = (
-  tenancyAgreement,
-  form,
-  fieldName,
-  assignToField = null
-) => {
-  let radioGroup;
+// const selectRadioInput = (
+//   tenancyAgreement,
+//   form,
+//   fieldName,
+//   assignToField = null
+// ) => {
+//   let radioGroup;
 
-  try {
-    if (assignToField) radioGroup = form.getRadioGroup(assignToField);
-    else radioGroup = form.getRadioGroup(fieldName);
-    const value = tenancyAgreement[fieldName];
-    if (value && radioGroup) radioGroup.select(value);
-  } catch (err) {
-    // console.log(err);
-    throw err;
-  }
-};
+//   try {
+//     if (assignToField) radioGroup = form.getRadioGroup(assignToField);
+//     else radioGroup = form.getRadioGroup(fieldName);
+//     const value = tenancyAgreement[fieldName];
+//     if (value && radioGroup) radioGroup.select(value);
+//   } catch (err) {
+//     // console.log(err);
+//     throw err;
+//   }
+// };
 
 const setSignature = async (
   pdfDoc,
@@ -340,11 +341,11 @@ const monthNameFormat = (date) => {
   );
 };
 
-const formatDateDMY = (date) => {
-  let dateValue = new Date(date);
-  let formatDate = moment(dateValue).format("DD/MM/YY");
-  return formatDate;
-};
+// const formatDateDMY = (date) => {
+//   let dateValue = new Date(date);
+//   let formatDate = moment(dateValue).format("DD/MM/YY");
+//   return formatDate;
+// };
 
 const timezoneConvert = (date) => {
   const newDate = new Date(date).toLocaleString("en-Us", {
@@ -380,101 +381,250 @@ const setDate = (
   }
 };
 
-const mailMergeAgreement = async (tenancyAgreement) => {
-  let agreement = tenancyAgreement;
+async function fetchLocalPDF(pdfPath) {
+  // Read the PDF file as a buffer
+  const pdfBuffer = await fs.promises.readFile(pdfPath);
+  // console.log(pdfBuffer)
+  // Convert the buffer to an ArrayBuffer
+  const pdfBytes = pdfBuffer.buffer.slice(
+    pdfBuffer.byteOffset,
+    pdfBuffer.byteOffset + pdfBuffer.byteLength
+  );
+  // console.log(pdfBytes)
+  return pdfBytes;
+}
+
+const mailMergeAgreement = async (form) => {
+  let agreement = form;
   //   console.log(tenancyAgreement);
-  const pdfUrl = templateConfig.tenancyAgreement;
-  const pdfBytes = await fetch(pdfUrl).then((res) => res.arrayBuffer());
+  const pdfPath = path.join(__dirname, "../../public", "Tenancy_Agreement.pdf");
+  const pdfBytes = await fetchLocalPDF(pdfPath);
+  // console.log("pdfBytes)
+  // console.log(pdfBytes)
   const pdfDoc = await PDFDocument.load(pdfBytes);
   const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
   const timesRomanFontBold = await pdfDoc.embedFont(
     StandardFonts.TimesRomanBold
   );
 
-  const form = pdfDoc.getForm();
+  const pdfForm = pdfDoc.getForm();
 
-  const fields = form.getFields();
+  const fields = pdfForm.getFields();
   fields.forEach((field) => {
     const type = field.constructor.name;
     const name = field.getName();
-    // console.log(`${type}: ${name}`);
+    console.log(`${name}`);
   });
   // console.log("Line 206")
   // console.log(tenancyAgreement)
 
-  // Page 1
-  // hardcode center align text bcoz cant find a way to align first item of the same field name
-  // setDate(agreement, form, 'dateOfAgreement', 'dateOfAgreement[0]', monthNameFormat, true, timesRomanFont,);
-  // if (agreement.tenantName1.length < 20) {
-  //     setText(agreement, form, 'tenantName1', 'tenantName1Short[0]', true, timesRomanFontBold,);
-  //     setText(agreement, form, 'tenantName1', 'tenantName1Short', false, timesRomanFont)
-  // } else {
-  //     setText(agreement, form, 'tenantName1', 'tenantName1[0]', true, timesRomanFontBold,);
-  //     setText(agreement, form, 'tenantName1', null, false, timesRomanFont);
-  // }
-  // setText(agreement, form, 'tenantIdentityNo1', 'tenantIdentityNo1[0]', true, timesRomanFontBold,);
-  // setDate(agreement, form, 'dateOfAgreement', null, monthNameFormat, false, timesRomanFont);
+  //Page 1
+  setDate(
+    agreement,
+    pdfForm,
+    "dateOfAgreement",
+    "dateOfAgreement[0]",
+    monthNameFormat,
+    true,
+    timesRomanFont
+  );
+  if (agreement.tenantName1.length < 20) {
+    setText(
+      agreement,
+      pdfForm,
+      "tenantName1",
+      "tenantName1Short[0]",
+      true,
+      timesRomanFontBold
+    );
+    setText(
+      agreement,
+      pdfForm,
+      "tenantName1",
+      "tenantName1Short",
+      false,
+      timesRomanFont
+    );
+  } else {
+    setText(
+      agreement,
+      pdfForm,
+      "tenantName1",
+      "tenantName1[0]",
+      true,
+      timesRomanFontBold
+    );
+    setText(agreement, pdfForm, "tenantName1", null, false, timesRomanFont);
+  }
 
-  // setText(agreement, form, 'tenantIdentityNo1', null, false, timesRomanFont);
+  setText(
+    agreement,
+    pdfForm,
+    "tenantIdentityNo1",
+    "tenantIdentityNo1[0]",
+    true,
+    timesRomanFontBold
+  );
+  setDate(
+    agreement,
+    pdfForm,
+    "dateOfAgreement",
+    null,
+    monthNameFormat,
+    false,
+    timesRomanFont
+  );
 
-  // //Page 15
-  setText(agreement, form, "propertyAddress", null, false, timesRomanFont);
-  // setText(agreement, form, 'tenantMobile1', null, false, timesRomanFont);
-  // setText(agreement, form, 'tenantEmail1', null, false, timesRomanFont);
+  setText(agreement, pdfForm, "tenantIdentityNo1", null, false, timesRomanFont);
 
-  // //Page 16
-  // setText(agreement, form, 'tenancyPeriod', null, false, timesRomanFont);
-  // setDate(agreement, form, 'tenancyStartDate', null, monthNameFormat, false, timesRomanFont);
-  // setDate(agreement, form, 'tenancyEndDate', null, monthNameFormat, false, timesRomanFont);
-  // setText(agreement, form, 'basicMonthlyRental', null, false, timesRomanFont);
-  // setText(agreement, form, 'tenantPaidAmount', null, false, timesRomanFont);
+  //Page 15
+  setText(agreement, pdfForm, "propertyAddress", null, false, timesRomanFont);
+  setText(agreement, pdfForm, "tenantMobile1", null, false, timesRomanFont);
+  setText(agreement, pdfForm, "tenantEmail1", null, false, timesRomanFont);
 
-  // setText(agreement, form, 'securityDeposit', null, false, timesRomanFont, 'Tenancy');
-  // // console.log(agreement.securityDeposit)
-  // if (parseInt(agreement.securityDeposit) === 0) {
-  //     agreement.securityDepositRule = 'need compensate one month rental'
-  // } else {
-  //     agreement.securityDepositRule = 'will forfeit half month rental deposit'
-  // }
-  // setText(agreement, form, 'securityDepositRule', null, false, timesRomanFontBold);
+  //Page 16
+  setText(agreement, pdfForm, "tenancyPeriod", null, false, timesRomanFont);
+  setDate(
+    agreement,
+    pdfForm,
+    "tenancyStartDate",
+    null,
+    monthNameFormat,
+    false,
+    timesRomanFont
+  );
+  setDate(
+    agreement,
+    pdfForm,
+    "tenancyEndDate",
+    null,
+    monthNameFormat,
+    false,
+    timesRomanFont
+  );
+  setText(
+    agreement,
+    pdfForm,
+    "basicMonthlyRental",
+    null,
+    false,
+    timesRomanFont
+  );
+  setText(agreement, pdfForm, "tenantPaidAmount", null, false, timesRomanFont);
 
-  // // console.log(agreement.securityDepositRule)
-  // setText(agreement, form, 'utilityDeposit', null, false, timesRomanFont);
-  // setText(agreement, form, 'accessCardDeposit', null, false, timesRomanFont);
-  // setText(agreement, form, 'parkingCardDeposit', null, false, timesRomanFont);
+  setText(
+    agreement,
+    pdfForm,
+    "securityDeposit",
+    null,
+    false,
+    timesRomanFont,
+    "Tenancy"
+  );
+  // console.log(agreement.securityDeposit)
+  if (parseInt(agreement.securityDeposit) === 0) {
+    agreement.securityDepositRule = "need compensate one month rental";
+  } else {
+    agreement.securityDepositRule = "will forfeit half month rental deposit";
+  }
+  setText(
+    agreement,
+    pdfForm,
+    "securityDepositRule",
+    null,
+    false,
+    timesRomanFontBold
+  );
 
-  // //Page 17
-  // setText(agreement, form, 'accessCardNo', null, false, timesRomanFont);
-  // setText(agreement, form, 'numberOfCarpark', null, false, timesRomanFont);
+  setText(agreement, pdfForm, "utilityDeposit", null, false, timesRomanFont);
+  setText(agreement, pdfForm, "accessCardDeposit", null, false, timesRomanFont);
+  setText(
+    agreement,
+    pdfForm,
+    "parkingCardDeposit",
+    null,
+    false,
+    timesRomanFont
+  );
 
-  // //Page 21
-  // // setText(tenancyAgreement, form, 'hostName', null, false, timesRomanFont);
-  // setDate(agreement, form, 'hostSignDate', null, monthNameFormat, false, timesRomanFont);
-  // setDate(agreement, form, 'tenantSignDate1', null, monthNameFormat, false, timesRomanFont);
-  // await setSignature(pdfDoc, agreement, form, 'hostSignatureImage');
-  // await setSignature(pdfDoc, agreement, form, 'tenantSignatureImage', 'tenantSignatureImage1');
+  //Page 21
+  setText(agreement, pdfForm, "hostName", null, false, timesRomanFont);
+  setDate(
+    agreement,
+    pdfForm,
+    "hostSignDate",
+    null,
+    monthNameFormat,
+    false,
+    timesRomanFont
+  );
+  setDate(
+    agreement,
+    pdfForm,
+    "hostIdentityNo",
+    null,
+    false,
+    timesRomanFont
+  );
+  setDate(
+    agreement,
+    pdfForm,
+    "tenantSignDate1",
+    null,
+    monthNameFormat,
+    false,
+    timesRomanFont
+  );
+  await setSignature(pdfDoc, agreement, pdfForm, "hostSignatureImage");
+  await setSignature(
+    pdfDoc,
+    agreement,
+    pdfForm,
+    "tenantSignatureImage",
+    "tenantSignatureImage1"
+  );
 
-  form.flatten();
+  pdfForm.flatten();
   const result = await pdfDoc.save();
   //   console.log(result);
   return result;
 };
 
-exports.previewAgreement = async (formData) => {
-  if (formData) {
-    let data = {
-      ...formData,
-      // dateOfAgreement: timezoneConvert(formData.dateOfAgreement),
-      // hostSignDate: timezoneConvert(formData.hostSignDate),
-      // tenantSignDate1: timezoneConvert(formData.tenantSignDate1),
-      // tenancyStartDate: timezoneConvert(formData.tenancyStartDate),
-      // tenancyEndDate: timezoneConvert(formData.tenancyEndDate)
+exports.previewAgreement = async (form) => {
+  if (form) {
+    let agreement = {
+      ...form,
+      dateOfAgreement: timezoneConvert(form.dateOfAgreement),
+      hostSignDate: timezoneConvert(form.hostSignDate),
+      tenantSignDate1: timezoneConvert(form.tenantSignDate1),
+      tenancyStartDate: timezoneConvert(form.tenancyStartDate),
+      tenancyEndDate: timezoneConvert(form.tenancyEndDate),
     };
 
-    const pdfAgreement = await mailMergeAgreement(data);
+    const pdfAgreement = await mailMergeAgreement(agreement);
     return {
       ok: true,
       pdfAgreement,
     };
+  }
+};
+
+exports.signAgreement = async (etenancyId, hostName, hostSignature) => {
+  const etenancyFound = await getById(etenancyId);
+  if (etenancyFound) {
+    console.log(etenancyFound);
+    const update = {
+      "host.name": hostName,
+      "host.signatureImage": hostSignature,
+      "host.signDate": new Date(),
+    };
+    console.log(update);
+    const result = await etenancyModel.findByIdAndUpdate(
+      etenancyFound._id,
+      update,
+      db.updateOption
+    );
+    console.log(result);
+    return result;
   }
 };
