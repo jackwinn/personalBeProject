@@ -12,10 +12,7 @@ const ETenanciesSchema = new Schema(
       name: String,
       email: String,
       mobile: String,
-      identity: {
-        number: { type: String },
-        type: { type: String },
-      },
+      identityNo: String,
       signatureImage: String,
       signDate: Date,
     },

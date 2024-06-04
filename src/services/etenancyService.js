@@ -14,8 +14,8 @@ module.exports = (app) => {
     console.log(reqbody);
 
     const payloadValidation = (action, reqbody) => {
-      if (action === "create" || action === "edit") {
-        if (!reqbody.propertyAddress || !reqbody.tenantName1) {
+      if (action === "create" || action === "edit" || action === "previewAgreement") {
+        if (!reqbody.propertyAddress || !reqbody.tenantName) {
           return {
             ok: false,
           };
@@ -28,7 +28,7 @@ module.exports = (app) => {
           };
         }
       }
-      if (action === "getById" || action === "previewAgreement" || action === "signAgreement") {
+      if (action === "getById" || action === "signAgreement") {
         if (!reqbody._id || !dbs.isMongoDbObjectId(reqbody._id)) {
           return {
             ok: false,
@@ -67,9 +67,8 @@ module.exports = (app) => {
       },
       signAgreement: async () => {
         const result = await etenancyComponent.signAgreement(
-          reqbody._id,
-          reqbody.hostName,
-          reqbody.hostSignature
+          reqbody._id,          
+          reqbody.hostSignatureImage
         );
         return result;
       },
